@@ -8,11 +8,17 @@
 #define PF3_GREEN_LED           0x08U
 #define PF4_SWITCH              0x10U
 
-static TaskHandle_t g_actionTaskHandle = NULL;
+#define USE_ISR_YIELD           1U
 
-volatile uint32_t g_interruptCount = 0;
-volatile uint32_t g_taskWakeCount = 0;
-volatile uint32_t g_lastNotificationTick = 0;
+static TaskHandle_t g_highTaskHandle = NULL;
+
+volatile uint32_t gInterruptCount = 0;
+volatile uint32_t gPendSvRequests = 0;
+volatile uint32_t gHighTaskRuns = 0;
+volatile uint32_t gLowTaskIterations = 0;
+volatile uint32_t gLastIsrTick = 0;
+volatile uint32_t gLastHighTaskTick = 0;
+volatile uint32_t gObservedLatencyTicks = 0;
 
 static void PortF_Init(void)
 {
@@ -42,41 +48,60 @@ void GPIOF_Handler(void)
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
     GPIO_PORTF_ICR_R = PF4_SWITCH;
-    g_interruptCount++;
+    gInterruptCount++;
+    gLastIsrTick = xTaskGetTickCountFromISR();
     GPIO_PORTF_DATA_R ^= PF2_BLUE_LED;
 
-    if (g_actionTaskHandle != NULL)
+    if (g_highTaskHandle != NULL)
     {
-        vTaskNotifyGiveFromISR(g_actionTaskHandle, &xHigherPriorityTaskWoken);
+        vTaskNotifyGiveFromISR(g_highTaskHandle, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            gPendSvRequests++;
+        }
     }
 
+#if USE_ISR_YIELD
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+#endif
 }
 
-static void vActionTask(void *pvParameters)
+static void vHighPriorityTask(void *pvParameters)
 {
     (void)pvParameters;
 
     for (;;)
     {
-        uint32_t pendingNotifications = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        if (pendingNotifications > 0U)
+        if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0U)
         {
-            g_taskWakeCount += pendingNotifications;
-            g_lastNotificationTick = xTaskGetTickCount();
+            gHighTaskRuns++;
+            gLastHighTaskTick = xTaskGetTickCount();
+            gObservedLatencyTicks = gLastHighTaskTick - gLastIsrTick;
             GPIO_PORTF_DATA_R ^= PF1_RED_LED;
         }
     }
 }
 
-static void vHeartbeatTask(void *pvParameters)
+static void vLowPriorityTask(void *pvParameters)
 {
     (void)pvParameters;
 
     for (;;)
     {
+        gLowTaskIterations++;
         GPIO_PORTF_DATA_R ^= PF3_GREEN_LED;
-        vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(20));
+    }
+}
+
+static void vTriggerTask(void *pvParameters)
+{
+    (void)pvParameters;
+
+    for (;;)
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        NVIC_SW_TRIG_R = 30;
     }
 }
 
@@ -85,18 +110,25 @@ int main(void)
     PortF_Init();
     GPIO_PORTF_DATA_R &= ~(PF1_RED_LED | PF2_BLUE_LED | PF3_GREEN_LED);
 
-    xTaskCreate(vActionTask,
-                "ActionTask",
+    xTaskCreate(vHighPriorityTask,
+                "HighTask",
                 configMINIMAL_STACK_SIZE,
                 NULL,
-                tskIDLE_PRIORITY + 2,
-                &g_actionTaskHandle);
+                tskIDLE_PRIORITY + 3,
+                &g_highTaskHandle);
 
-    xTaskCreate(vHeartbeatTask,
-                "Heartbeat",
+    xTaskCreate(vLowPriorityTask,
+                "LowTask",
                 configMINIMAL_STACK_SIZE,
                 NULL,
                 tskIDLE_PRIORITY + 1,
+                NULL);
+
+    xTaskCreate(vTriggerTask,
+                "Trigger",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                tskIDLE_PRIORITY + 2,
                 NULL);
 
     vTaskStartScheduler();

@@ -1,7 +1,8 @@
 //*****************************************************************************
 //
-// main.c - Context Switch Demo using Stack Pointers (SP)
-// Demonstrates context switching by saving/restoring SP for each task
+// main.c - Wrong stack pointer restoration demo
+// Builds two Cortex-M exception frames and intentionally restores one task with
+// a shifted stack pointer to expose corrupted frame decoding in the debugger.
 //
 //*****************************************************************************
 
@@ -23,23 +24,48 @@ uint32_t *sp_task1 = &stack_task1[40];
 uint32_t stack_task2[40];
 uint32_t *sp_task2 = &stack_task2[40];
 
+uint32_t *g_currentSp = 0;
+uint32_t *g_restoredSp = 0;
+uint32_t *g_faultyRestoreSp = 0;
+
+typedef struct
+{
+    uint32_t r0;
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r12;
+    uint32_t lr;
+    uint32_t pc;
+    uint32_t xpsr;
+} ExceptionFrame;
+
+volatile ExceptionFrame g_lastDecodedFrame;
+
 //*****************************************************************************
 // Global Variables
 //*****************************************************************************
 volatile uint32_t g_ui32SysTickCount = 0;
+volatile uint32_t g_currentTaskId = 1;
+volatile uint32_t g_nextTaskId = 2;
+volatile uint32_t g_restoreAttemptCount = 0;
+volatile uint32_t g_contextCorruptionDetected = 0;
+volatile uint32_t g_expectedPc = 0;
+volatile uint32_t g_observedPc = 0;
+volatile uint32_t g_expectedXpsr = 0x01000000U;
+volatile uint32_t g_faultSignature = 0;
+volatile uint32_t g_useBrokenRestore = 1;
+volatile uint32_t g_task1Heartbeat = 0;
+volatile uint32_t g_task2Heartbeat = 0;
 
 //*****************************************************************************
 // Task1 - Runs in an infinite loop, does some work
 //*****************************************************************************
 void Task1(void)
 {
-    volatile uint32_t counter1 = 0;
-    
     while(1)
     {
-        counter1++;
-        
-        // Simulate some work
+        g_task1Heartbeat++;
         for(volatile int i = 0; i < 1000; i++)
         {
             __asm("NOP");
@@ -52,13 +78,9 @@ void Task1(void)
 //*****************************************************************************
 void Task2(void)
 {
-    volatile uint32_t counter2 = 0;
-    
     while(1)
     {
-        counter2++;
-        
-        // Simulate different work
+        g_task2Heartbeat++;
         for(volatile int j = 0; j < 500; j++)
         {
             __asm("NOP");
@@ -67,24 +89,102 @@ void Task2(void)
 }
 
 //*****************************************************************************
+// Build a synthetic exception frame exactly as Cortex-M stacks it on exception
+// entry so the debugger can inspect a realistic restore target.
+//*****************************************************************************
+static void BuildInitialFrame(uint32_t **stackPointer, void (*entryPoint)(void), uint32_t seed)
+{
+    *(--(*stackPointer)) = (1U << 24);
+    *(--(*stackPointer)) = (uint32_t)(uintptr_t)entryPoint;
+    *(--(*stackPointer)) = 0xFFFFFFFDU;
+    *(--(*stackPointer)) = 0x12121212U + seed;
+    *(--(*stackPointer)) = 0x03030303U + seed;
+    *(--(*stackPointer)) = 0x02020202U + seed;
+    *(--(*stackPointer)) = 0x01010101U + seed;
+    *(--(*stackPointer)) = 0x00000000U + seed;
+}
+
+//*****************************************************************************
+// Decode an exception frame from a candidate stack pointer.
+//*****************************************************************************
+static ExceptionFrame DecodeFrame(const uint32_t *stackPointer)
+{
+    ExceptionFrame frame;
+
+    frame.r0 = stackPointer[0];
+    frame.r1 = stackPointer[1];
+    frame.r2 = stackPointer[2];
+    frame.r3 = stackPointer[3];
+    frame.r12 = stackPointer[4];
+    frame.lr = stackPointer[5];
+    frame.pc = stackPointer[6];
+    frame.xpsr = stackPointer[7];
+
+    return frame;
+}
+
+//*****************************************************************************
+// Simulate a restore attempt and flag the broken one.
+//*****************************************************************************
+static void AttemptContextRestore(void)
+{
+    const uint32_t *candidateSp;
+
+    g_restoreAttemptCount++;
+    g_nextTaskId = (g_currentTaskId == 1U) ? 2U : 1U;
+
+    if (g_nextTaskId == 1U)
+    {
+        g_restoredSp = sp_task1;
+        g_expectedPc = (uint32_t)(uintptr_t)&Task1;
+    }
+    else
+    {
+        g_restoredSp = sp_task2;
+        g_expectedPc = (uint32_t)(uintptr_t)&Task2;
+    }
+
+    candidateSp = g_restoredSp;
+
+    if ((g_nextTaskId == 2U) && (g_useBrokenRestore != 0U))
+    {
+        g_faultyRestoreSp = g_restoredSp + 1;
+        candidateSp = g_faultyRestoreSp;
+    }
+    else
+    {
+        g_faultyRestoreSp = g_restoredSp;
+    }
+
+    g_lastDecodedFrame = DecodeFrame(candidateSp);
+    g_observedPc = g_lastDecodedFrame.pc;
+
+    if ((g_lastDecodedFrame.pc != g_expectedPc) ||
+        ((g_lastDecodedFrame.xpsr & (1U << 24)) == 0U))
+    {
+        g_contextCorruptionDetected = 1U;
+        g_faultSignature = g_lastDecodedFrame.pc ^ g_lastDecodedFrame.xpsr;
+    }
+    else
+    {
+        g_contextCorruptionDetected = 0U;
+        g_currentTaskId = g_nextTaskId;
+        g_currentSp = g_restoredSp;
+    }
+}
+
+//*****************************************************************************
 // SysTick Handler - Fires every 1ms
-// Performs context switch by swapping stack pointers
+// Performs a debugger-friendly simulated restore attempt.
 //*****************************************************************************
 void SysTick_Handler(void)
 {
-    // Increment tick counter
     g_ui32SysTickCount++;
-    
-    // Context switch logic using SP
-    // The stacked frame on MSP:
-    // [MSP+0x00] = R0
-    // [MSP+0x04] = R1
-    // [MSP+0x08] = R2
-    // [MSP+0x0C] = R3
-    // [MSP+0x10] = R12
-    // [MSP+0x14] = LR
-    // [MSP+0x18] = PC
-    // [MSP+0x1C] = xPSR
+
+    if ((g_ui32SysTickCount % 1000U) == 0U)
+    {
+        AttemptContextRestore();
+    }
 }
 
 //*****************************************************************************
@@ -112,30 +212,26 @@ void SysTick_Init(void)
 //*****************************************************************************
 int main(void)
 {
-    // Fabricate Cortex-M ISR stack frame for Task1
-    *(--sp_task1) = (1U << 24);           /* xPSR (Thumb bit set) */
-    *(--sp_task1) = (uint32_t)&Task1;     /* PC */
-    *(--sp_task1) = 0x0000000EU;          /* LR  */
-    *(--sp_task1) = 0x0000000CU;          /* R12 */
-    *(--sp_task1) = 0x00000003U;          /* R3  */
-    *(--sp_task1) = 0x00000002U;          /* R2  */
-    *(--sp_task1) = 0x00000001U;          /* R1  */
-    *(--sp_task1) = 0x00000000U;          /* R0  */
+    BuildInitialFrame(&sp_task1, Task1, 0x10U);
+    BuildInitialFrame(&sp_task2, Task2, 0x20U);
 
-    // Fabricate Cortex-M ISR stack frame for Task2
-    *(--sp_task2) = (1U << 24);           /* xPSR (Thumb bit set) */
-    *(--sp_task2) = (uint32_t)&Task2;     /* PC */
-    *(--sp_task2) = 0x0000000EU;          /* LR  */
-    *(--sp_task2) = 0x0000000CU;          /* R12 */
-    *(--sp_task2) = 0x00000003U;          /* R3  */
-    *(--sp_task2) = 0x00000002U;          /* R2  */
-    *(--sp_task2) = 0x00000001U;          /* R1  */
-    *(--sp_task2) = 0x00000000U;          /* R0  */
+    g_currentSp = sp_task1;
+    g_restoredSp = sp_task1;
+    g_faultyRestoreSp = sp_task2 + 1;
+    g_lastDecodedFrame = DecodeFrame(sp_task1);
+    g_observedPc = g_lastDecodedFrame.pc;
+    g_expectedPc = (uint32_t)(uintptr_t)&Task2;
 
-    // Initialize SysTick for 1ms interrupt
     SysTick_Init();
 		
     while(1)
     {
+        if (g_contextCorruptionDetected != 0U)
+        {
+            for(volatile int k = 0; k < 500; k++)
+            {
+                __asm("NOP");
+            }
+        }
     }
 }

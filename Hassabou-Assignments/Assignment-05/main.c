@@ -5,23 +5,34 @@
 #include "semphr.h"
 
 // Global Handle for the Binary Semaphore
-SemaphoreHandle_t xBinarySemaphore = NULL;
+static SemaphoreHandle_t xBinarySemaphore = NULL;
 
 // Global counters to observe in Keil Logic Analyzer or Watch Window
-volatile uint32_t InterruptsFired = 0;
-volatile uint32_t TasksProcessed = 0;
+volatile uint32_t gInterruptsFired = 0;
+volatile uint32_t gSemaphoreAccepted = 0;
+volatile uint32_t gDroppedInterrupts = 0;
+volatile uint32_t gTasksProcessed = 0;
+volatile uint32_t gTriggerBursts = 0;
+volatile uint32_t gHandlerBusy = 0;
+
+#define PF1_RED_LED             0x02U
+#define PF2_BLUE_LED            0x04U
+#define PF3_GREEN_LED           0x08U
+#define PF4_SWITCH              0x10U
 
 /* -------------------------------------------------------------------------
  * Hardware Initialization (Port F for simulation purposes)
  * ------------------------------------------------------------------------- */
-void PortF_Init(void) {
+static void PortF_Init(void) {
     SYSCTL_RCGCGPIO_R |= 0x20;
     while((SYSCTL_PRGPIO_R & 0x20) == 0) {}; 
 
     GPIO_PORTF_DIR_R |= 0x0E;  
     GPIO_PORTF_DEN_R |= 0x1E;
+    GPIO_PORTF_PUR_R |= PF4_SWITCH;
+    GPIO_PORTF_ICR_R = PF4_SWITCH;
     
-    GPIO_PORTF_IM_R |= 0x10;   
+    GPIO_PORTF_IM_R |= PF4_SWITCH;   
 
     NVIC_PRI7_R = (NVIC_PRI7_R & 0xFF00FFFF) | 0x00A00000; 
     
@@ -33,13 +44,20 @@ void PortF_Init(void) {
  * ------------------------------------------------------------------------- */
 void GPIOF_Handler(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    BaseType_t xSemaphoreStatus;
 
-    GPIO_PORTF_ICR_R = 0x10;
+    GPIO_PORTF_ICR_R = PF4_SWITCH;
 
-    InterruptsFired++;
+    gInterruptsFired++;
+    GPIO_PORTF_DATA_R ^= PF2_BLUE_LED;
 
     if (xBinarySemaphore != NULL) {
-        xSemaphoreGiveFromISR(xBinarySemaphore, &xHigherPriorityTaskWoken);
+        xSemaphoreStatus = xSemaphoreGiveFromISR(xBinarySemaphore, &xHigherPriorityTaskWoken);
+        if (xSemaphoreStatus == pdTRUE) {
+            gSemaphoreAccepted++;
+        } else {
+            gDroppedInterrupts++;
+        }
     }
 
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -48,39 +66,41 @@ void GPIOF_Handler(void) {
 /* -------------------------------------------------------------------------
  * Task 1: The Trigger Task (Simulates high-frequency hardware events)
  * ------------------------------------------------------------------------- */
-void vTriggerTask(void *pvParameters) {
+static void vTriggerTask(void *pvParameters) {
+    (void)pvParameters;
+
     for (;;) {
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(3500));
+        gTriggerBursts++;
+        GPIO_PORTF_DATA_R ^= PF3_GREEN_LED;
         
-        NVIC_SW_TRIG_R = 30; // Wakes Handler
-        vTaskDelay(pdMS_TO_TICKS(100));
+        NVIC_SW_TRIG_R = 30;
+        vTaskDelay(pdMS_TO_TICKS(30));
         
-        NVIC_SW_TRIG_R = 30; // Fills Semaphore to 1
-        vTaskDelay(pdMS_TO_TICKS(100));
+        NVIC_SW_TRIG_R = 30;
+        vTaskDelay(pdMS_TO_TICKS(30));
         
-        NVIC_SW_TRIG_R = 30; // DROPPED! 
+        NVIC_SW_TRIG_R = 30;
     }
 }
 
 /* -------------------------------------------------------------------------
  * Task 2: The Handler Task (Simulates slow event processing)
  * ------------------------------------------------------------------------- */
-void vHandlerTask(void *pvParameters) {
+static void vHandlerTask(void *pvParameters) {
+    (void)pvParameters;
+
     for (;;) {
-        // Block until an interrupt gives the semaphore
         if (xSemaphoreTake(xBinarySemaphore, portMAX_DELAY) == pdTRUE) {
-            
-            GPIO_PORTF_DATA_R |= 0x02; 
-            
-            TasksProcessed++;
-            
-            // SIMULATE HEAVY PROCESSING
-            // Because this is a busy-wait, FreeRTOS cannot run this task's 
-            // xSemaphoreTake again until this loop finishes.
-            for(volatile int i = 0; i < 2000000; i++) {}
-            
-            // Turn off Red LED
-            GPIO_PORTF_DATA_R &= ~0x02; 
+            gHandlerBusy = 1;
+            gTasksProcessed++;
+
+            GPIO_PORTF_DATA_R |= PF1_RED_LED;
+
+            vTaskDelay(pdMS_TO_TICKS(1200));
+
+            GPIO_PORTF_DATA_R &= ~PF1_RED_LED;
+            gHandlerBusy = 0;
         }
     }
 }
@@ -90,16 +110,13 @@ void vHandlerTask(void *pvParameters) {
  * ------------------------------------------------------------------------- */
 int main(void) {
     PortF_Init();
+    GPIO_PORTF_DATA_R &= ~(PF1_RED_LED | PF2_BLUE_LED | PF3_GREEN_LED);
 
-    // Create the Binary Semaphore
     xBinarySemaphore = xSemaphoreCreateBinary();
 
     if (xBinarySemaphore != NULL) {
-        // Trigger Task runs at Priority 2 to successfully interrupt the Handler
-        xTaskCreate(vTriggerTask, "Trigger", configMINIMAL_STACK_SIZE, NULL, 2, NULL);    
-        
-        // Handler Task runs at Priority 1
-        xTaskCreate(vHandlerTask, "Handler", configMINIMAL_STACK_SIZE, NULL, 1, NULL);    
+        xTaskCreate(vTriggerTask, "Trigger", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, NULL);
+        xTaskCreate(vHandlerTask, "Handler", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
         vTaskStartScheduler();
     }
