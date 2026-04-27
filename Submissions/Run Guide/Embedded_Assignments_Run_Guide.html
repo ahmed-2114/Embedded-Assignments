@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded Assignments Run Guide</title>
+  <style>
+    body {
+      font-family: Segoe UI, Arial, sans-serif;
+      line-height: 1.5;
+      margin: 40px auto;
+      max-width: 980px;
+      color: #1f2937;
+      background: #ffffff;
+      padding: 0 24px 60px;
+    }
+    h1, h2, h3 {
+      color: #111827;
+    }
+    h1 {
+      border-bottom: 3px solid #0f766e;
+      padding-bottom: 12px;
+    }
+    h2 {
+      margin-top: 32px;
+      border-bottom: 1px solid #d1d5db;
+      padding-bottom: 6px;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    ul, ol {
+      margin-top: 8px;
+    }
+    li {
+      margin: 4px 0;
+    }
+    .note {
+      background: #ecfeff;
+      border-left: 4px solid #0891b2;
+      padding: 12px 14px;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Embedded Assignments Run Guide</h1>
+  <p>This guide explains how to run each assignment in Keil step by step, what to open, what to watch, where to place breakpoints, and what result you should expect.</p>
+
+  <div class="note">
+    <strong>Important note:</strong> Assignment 03 and Assignment 05 were already runtime-checked in Keil and their steps below are verified. Assignment 07, Assignment 06, Assignment 04, and Assignment 02 are based on the current code in the workspace and are prepared as the next debug flow to follow.
+  </div>
+
+  <h2>Recommended Order</h2>
+  <ol>
+    <li>Assignment 03</li>
+    <li>Assignment 05</li>
+    <li>Assignment 07</li>
+    <li>Assignment 06</li>
+    <li>Assignment 04</li>
+    <li>Assignment 02</li>
+  </ol>
+
+  <h2>Standard Debug Windows</h2>
+  <p>For all assignments, keep these windows open unless noted otherwise:</p>
+  <ul>
+    <li>source window showing <code>main.c</code></li>
+    <li><code>Watch 1</code></li>
+    <li><code>Call Stack + Locals</code></li>
+    <li><code>Registers</code></li>
+  </ul>
+  <p><code>Registers</code> is useful, but the most important windows are <code>main.c</code> and <code>Watch 1</code>.</p>
+
+  <h2>Assignment 03</h2>
+  <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-03/Assignment-03.uvprojx</code></p>
+  <h3>Build</h3>
+  <ol>
+    <li>Open the project in Keil.</li>
+    <li>Click <code>Rebuild</code>.</li>
+    <li>Expected result: <code>0 Error(s), 0 Warning(s)</code>.</li>
+  </ol>
+  <h3>Watch Variables</h3>
+  <ul>
+    <li><code>g_interruptCount</code></li>
+    <li><code>g_taskWakeCount</code></li>
+    <li><code>g_lastNotificationTick</code></li>
+    <li><code>g_actionTaskHandle</code></li>
+  </ul>
+  <h3>Breakpoints</h3>
+  <ul>
+    <li>the line <code>g_interruptCount++;</code> inside <code>GPIOF_Handler()</code></li>
+    <li>the line <code>g_taskWakeCount += pendingNotifications;</code> inside <code>vActionTask()</code></li>
+  </ul>
+  <h3>Run Steps</h3>
+  <ol>
+    <li>Start a debug session.</li>
+    <li>Press <code>Run</code>.</li>
+    <li>Use the LaunchPad / Port F simulator window.</li>
+    <li>Press <code>SW1</code> once.</li>
+    <li>The first stop should be in <code>GPIOF_Handler()</code> at <code>g_interruptCount++;</code>.</li>
+    <li>Press <code>F10</code> once.</li>
+    <li>Expected: <code>g_interruptCount</code> becomes <code>1</code>.</li>
+    <li>Press <code>F5</code>.</li>
+    <li>The next stop should be in <code>vActionTask()</code> at <code>g_taskWakeCount += pendingNotifications;</code>.</li>
+    <li>Press <code>F10</code> once.</li>
+    <li>Expected: <code>g_taskWakeCount</code> becomes <code>1</code> and <code>g_lastNotificationTick</code> changes from <code>0</code>.</li>
+  </ol>
+
+  <h2>Assignment 05</h2>
+  <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-05/Assignment-05.uvprojx</code></p>
+  <h3>Build</h3>
+  <ol>
+    <li>Open the project in Keil.</li>
+    <li>Click <code>Rebuild</code>.</li>
+    <li>Expected result: <code>0 Error(s), 0 Warning(s)</code>.</li>
+  </ol>
+  <h3>Watch Variables</h3>
+  <ul>
+    <li><code>gInterruptsFired</code></li>
+    <li><code>gSemaphoreAccepted</code></li>
+    <li><code>gDroppedInterrupts</code></li>
+    <li><code>gTasksProcessed</code></li>
+    <li><code>gTriggerBursts</code></li>
+    <li><code>gHandlerBusy</code></li>
+  </ul>
+  <h3>Breakpoints</h3>
+  <ul>
+    <li>the line <code>gInterruptsFired++;</code> inside <code>GPIOF_Handler()</code></li>
+    <li>the line <code>gTasksProcessed++;</code> inside <code>vHandlerTask()</code></li>
+  </ul>
+  <h3>Run Steps</h3>
+  <ol>
+    <li>Start a debug session.</li>
+    <li>Press <code>Run</code>.</li>
+    <li>Do not click anything in the simulator. This project triggers interrupts automatically in software.</li>
+    <li>The first stop should be in <code>GPIOF_Handler()</code> at <code>gInterruptsFired++;</code>.</li>
+    <li>Press <code>F10</code> once.</li>
+    <li>Expected: <code>gInterruptsFired</code> becomes <code>1</code>.</li>
+    <li>Press <code>F5</code>.</li>
+    <li>The next stop should be in <code>vHandlerTask()</code> at <code>gTasksProcessed++;</code>.</li>
+    <li>Press <code>F10</code> once.</li>
+    <li>Expected: <code>gTasksProcessed</code> becomes <code>1</code> and <code>gHandlerBusy</code> stays <code>1</code>.</li>
+    <li>Press <code>F5</code> again.</li>
+    <li>The next stop should return to the ISR while the handler is still busy.</li>
+    <li>Step through the ISR until after the <code>xSemaphoreGiveFromISR()</code> decision.</li>
+    <li>Keep watching <code>gSemaphoreAccepted</code> and <code>gDroppedInterrupts</code>.</li>
+    <li>Final expected proof: <code>gDroppedInterrupts</code> becomes <code>1</code> or greater.</li>
+  </ol>
+
+  <h2>Assignment 07</h2>
+  <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-07/Assignment-07.uvprojx</code></p>
+  <h3>Watch Variables</h3>
+  <ul>
+    <li><code>gInterruptsFired</code></li>
+    <li><code>gTokensQueued</code></li>
+    <li><code>gTokensProcessed</code></li>
+    <li><code>gBurstCounter</code></li>
+    <li><code>gHandlerActive</code></li>
+  </ul>
+  <h3>Breakpoints</h3>
+  <ul>
+    <li>the line <code>gInterruptsFired++;</code> inside <code>GPIOF_Handler()</code></li>
+    <li>the line <code>gTokensProcessed++;</code> inside <code>vHandlerTask()</code></li>
+  </ul>
+  <h3>Run Summary</h3>
+  <ol>
+    <li>Build and start debug.</li>
+    <li>Run without clicking anything manually.</li>
+    <li>First stop: ISR. Step once and expect <code>gInterruptsFired = 1</code> and <code>gTokensQueued = 1</code>.</li>
+    <li>Continue to the handler stop. Step once and expect <code>gTokensProcessed = 1</code>.</li>
+    <li>Continue until all three interrupts occur.</li>
+    <li>Final expected behavior: three interrupts, three queued tokens, and a staircase increase in <code>gTokensProcessed</code>.</li>
+  </ol>
+
+  <h2>Assignment 06</h2>
+  <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-06/Assignment-06.uvprojx</code></p>
+  <h3>Watch Variables</h3>
+  <ul>
+    <li><code>gActiveResources</code></li>
+    <li><code>gMaxObservedResources</code></li>
+    <li><code>gAcquireCount[0..4]</code></li>
+    <li><code>gReleaseCount[0..4]</code></li>
+    <li><code>gTaskUsingResource[0..4]</code></li>
+  </ul>
+  <h3>Breakpoints</h3>
+  <ul>
+    <li>the line <code>gActiveResources++;</code></li>
+    <li>the line <code>gActiveResources--;</code></li>
+  </ul>
+  <h3>Run Summary</h3>
+  <ol>
+    <li>Build and start debug.</li>
+    <li>Run and let worker tasks compete automatically.</li>
+    <li>Stop when a resource is acquired, then step once.</li>
+    <li>Expected: <code>gActiveResources</code> increases.</li>
+    <li>Continue until two tasks are active.</li>
+    <li>Expected final proof: <code>gMaxObservedResources</code> never exceeds <code>2</code>.</li>
+  </ol>
+
+  <h2>Assignment 04</h2>
+  <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-04/Assignment-03.uvprojx</code></p>
+  <h3>Watch Variables</h3>
+  <ul>
+    <li><code>gInterruptCount</code></li>
+    <li><code>gPendSvRequests</code></li>
+    <li><code>gHighTaskRuns</code></li>
+    <li><code>gLowTaskIterations</code></li>
+    <li><code>gLastIsrTick</code></li>
+    <li><code>gLastHighTaskTick</code></li>
+    <li><code>gObservedLatencyTicks</code></li>
+  </ul>
+  <h3>Breakpoints</h3>
+  <ul>
+    <li>the line <code>gInterruptCount++;</code> inside <code>GPIOF_Handler()</code></li>
+    <li>the line <code>gHighTaskRuns++;</code> inside <code>vHighPriorityTask()</code></li>
+  </ul>
+  <h3>Run Summary</h3>
+  <ol>
+    <li>Build and start debug.</li>
+    <li>Run without clicking anything manually.</li>
+    <li>Record behavior with <code>USE_ISR_YIELD = 1</code>.</li>
+    <li>Then change it to <code>0</code>, rebuild, and repeat.</li>
+    <li>Compare <code>gObservedLatencyTicks</code> between both runs.</li>
+  </ol>
+
+  <h2>Assignment 02</h2>
+  <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-02/Assignment-02.uvprojx</code></p>
+  <h3>Additional Windows</h3>
+  <ul>
+    <li><code>Memory 1</code></li>
+    <li>Disassembly only if needed</li>
+  </ul>
+  <h3>Watch Variables</h3>
+  <ul>
+    <li><code>g_ui32SysTickCount</code></li>
+    <li><code>g_restoreAttemptCount</code></li>
+    <li><code>g_currentTaskId</code></li>
+    <li><code>g_nextTaskId</code></li>
+    <li><code>g_contextCorruptionDetected</code></li>
+    <li><code>g_expectedPc</code></li>
+    <li><code>g_observedPc</code></li>
+    <li><code>g_faultSignature</code></li>
+    <li><code>g_currentSp</code></li>
+    <li><code>g_restoredSp</code></li>
+    <li><code>g_faultyRestoreSp</code></li>
+    <li><code>g_lastDecodedFrame.pc</code></li>
+    <li><code>g_lastDecodedFrame.xpsr</code></li>
+  </ul>
+  <h3>Breakpoints</h3>
+  <ul>
+    <li>the line <code>g_restoreAttemptCount++;</code> inside <code>AttemptContextRestore()</code></li>
+    <li>the corruption-check <code>if</code> that compares the decoded frame values</li>
+  </ul>
+  <h3>Run Summary</h3>
+  <ol>
+    <li>Build and start debug.</li>
+    <li>Run until the restore attempt occurs.</li>
+    <li>Step through the frame decode.</li>
+    <li>Compare <code>g_expectedPc</code>, <code>g_observedPc</code>, <code>g_restoredSp</code>, and <code>g_faultyRestoreSp</code>.</li>
+    <li>Expected final proof: <code>g_contextCorruptionDetected = 1</code> and the frame values no longer match a valid restore.</li>
+  </ol>
+</body>
+</html>
