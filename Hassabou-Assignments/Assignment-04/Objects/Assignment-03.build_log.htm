@@ -5,10 +5,10 @@
 <h2>Tool Versions:</h2>
 IDE-Version: µVision V5.38.0.0
 Copyright (C) 2022 ARM Ltd and ARM Germany GmbH. All rights reserved.
-License Information: Ahmed Hassabou, HP Inc., LIC=UB4EI-T92KU-NTS3G-VSM8P-ZPP13-9LZM2
+License Information: ahmed ahmed medhat, ain shams , LIC=----
  
 Tool Versions:
-Toolchain:       MDK-ARM Professional  Version: 5.38.0.0
+Toolchain:       MDK-Lite  Version: 5.38.0.0
 Toolchain Path:  C:\Keil_v5\ARM\ARMCLANG\Bin
 C Compiler:      ArmClang.exe V6.19
 Assembler:       Armasm.exe V6.19
@@ -21,32 +21,32 @@ Target DLL:      UL2CM3.DLL V1.164.8.0
 Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
-C:\Users\ahmed\OneDrive - Garraio\Faculty\CSE411 Real-Time and Embedded Systems Design\04_myKeilWS\Assignment-03\Assignment-03.uvprojx
-Project File Date:  04/19/2026
+C:\Users\ahmed medhat\Desktop\Embedded-Assignments\Hassabou-Assignments\Assignment-04\Assignment-03.uvprojx
+Project File Date:  04/27/2026
 
 <h2>Output:</h2>
 *** Using Compiler 'V6.19', folder: 'C:\Keil_v5\ARM\ARMCLANG\Bin'
 Rebuild target 'Target 1'
-compiling retarget.c...
 compiling freertos_evr.c...
 compiling basic_io.c...
+compiling list.c...
+compiling retarget.c...
+compiling consoleprint.c...
 compiling os_systick.c...
 compiling retarget_io.c...
-compiling list.c...
-compiling consoleprint.c...
-compiling port.c...
-compiling main.c...
 compiling system_TM4C123.c...
 compiling clib_os.c...
-compiling heap_4.c...
-compiling event_groups.c...
+compiling main.c...
 assembling startup_TM4C123.s...
+compiling event_groups.c...
+compiling port.c...
 compiling cmsis_os2.c...
+compiling heap_4.c...
 compiling timers.c...
 compiling queue.c...
 compiling tasks.c...
 linking...
-Program Size: Code=15256 RO-data=680 RW-data=8 ZI-data=11968  
+Program Size: Code=16188 RO-data=696 RW-data=8 ZI-data=12008  
 ".\Objects\Assignment-03.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
@@ -87,12 +87,12 @@ Package Vendor: Keil
 <h2>Collection of Component include folders:</h2>
   ./RTE/RTOS
   ./RTE/_Target_1
-  C:/Users/ahmed/AppData/Local/Arm/Packs/ARM/CMSIS-FreeRTOS/11.2.0/CMSIS/RTOS2/FreeRTOS/Include
-  C:/Users/ahmed/AppData/Local/Arm/Packs/ARM/CMSIS-FreeRTOS/11.2.0/Source/include
-  C:/Users/ahmed/AppData/Local/Arm/Packs/ARM/CMSIS-FreeRTOS/11.2.0/Source/portable/GCC/ARM_CM4F
-  C:/Users/ahmed/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include
-  C:/Users/ahmed/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/RTOS2/Include
-  C:/Users/ahmed/AppData/Local/Arm/Packs/Keil/TM4C_DFP/1.1.0/Device/Include/TM4C123
+  C:/Users/ahmed medhat/AppData/Local/Arm/Packs/ARM/CMSIS-FreeRTOS/11.2.0/CMSIS/RTOS2/FreeRTOS/Include
+  C:/Users/ahmed medhat/AppData/Local/Arm/Packs/ARM/CMSIS-FreeRTOS/11.2.0/Source/include
+  C:/Users/ahmed medhat/AppData/Local/Arm/Packs/ARM/CMSIS-FreeRTOS/11.2.0/Source/portable/GCC/ARM_CM4F
+  C:/Users/ahmed medhat/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include
+  C:/Users/ahmed medhat/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/RTOS2/Include
+  C:/Users/ahmed medhat/AppData/Local/Arm/Packs/Keil/TM4C_DFP/1.1.0/Device/Include/TM4C123
 
 <h2>Collection of Component Files used:</h2>
 
@@ -106,26 +106,26 @@ Package Vendor: Keil
       Include file:  CMSIS/RTOS2/FreeRTOS/Config/FreeRTOSConfig.h
 
    * Component: ARM.FreeRTOS::RTOS:Core:Cortex-M:11.2.0
-      Include file:  Source/include/task.h
-      Source file:   Source/portable/GCC/ARM_CM4F/port.c
       Include file:  Source/include/FreeRTOS.h
-      Include file:  Source/include/semphr.h
-      Source file:   Source/queue.c
-      Include file:  Source/include/queue.h
-      Source file:   Source/tasks.c
       Source file:   Source/list.c
+      Source file:   Source/queue.c
+      Source file:   Source/portable/GCC/ARM_CM4F/port.c
+      Include file:  Source/include/semphr.h
+      Source file:   Source/tasks.c
+      Include file:  Source/include/queue.h
+      Include file:  Source/include/task.h
       Source file:   CMSIS/RTOS2/FreeRTOS/Source/freertos_evr.c
 
    * Component: ARM.FreeRTOS::RTOS:Event Groups:11.2.0
-      Include file:  Source/include/event_groups.h
       Source file:   Source/event_groups.c
+      Include file:  Source/include/event_groups.h
 
    * Component: ARM.FreeRTOS::RTOS:Heap:Heap_4:11.2.0
       Source file:   Source/portable/MemMang/heap_4.c
 
    * Component: ARM.FreeRTOS::RTOS:Timers:11.2.0
-      Include file:  Source/include/timers.h
       Source file:   Source/timers.c
+      Include file:  Source/include/timers.h
 
    * Component: ARM::CMSIS:CORE:6.2.0
 
@@ -133,8 +133,8 @@ Package Vendor: Keil
       Source file:   CMSIS/RTOS2/Source/os_systick.c
 
    * Component: ARM::CMSIS:RTOS2:FreeRTOS:Cortex-M:11.2.0
-      Source file:   CMSIS/RTOS2/FreeRTOS/Source/cmsis_os2.c
       Include file:  CMSIS/RTOS2/FreeRTOS/Include/freertos_mpool.h
+      Source file:   CMSIS/RTOS2/FreeRTOS/Source/cmsis_os2.c
       Source file:   CMSIS/RTOS2/FreeRTOS/Source/clib_os.c
 
    * Component: Keil.ARM Compiler::Compiler:I/O:STDIN:ITM:1.2.0
@@ -144,10 +144,10 @@ Package Vendor: Keil
       Source file:   Source/retarget_io.c
 
    * Component: Keil::Device:Startup:1.0.1
-      Source file:   Device/Source/ARM/startup_TM4C123.s
-      Include file:  Device/Include/TM4C123/TM4C123.h
       Source file:   Device/Source/system_TM4C123.c
-Build Time Elapsed:  00:00:02
+      Include file:  Device/Include/TM4C123/TM4C123.h
+      Source file:   Device/Source/ARM/startup_TM4C123.s
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

@@ -9,6 +9,7 @@
 #define PF4_SWITCH              0x10U
 
 #define USE_ISR_YIELD           1U
+#define POST_INTERRUPT_BUSY_SPIN 600000U
 
 static TaskHandle_t g_highTaskHandle = NULL;
 
@@ -19,6 +20,8 @@ volatile uint32_t gLowTaskIterations = 0;
 volatile uint32_t gLastIsrTick = 0;
 volatile uint32_t gLastHighTaskTick = 0;
 volatile uint32_t gObservedLatencyTicks = 0;
+volatile uint32_t gTriggerSpinProgress = 0;
+volatile uint32_t gSpinProgressAtHighTask = 0;
 
 static void PortF_Init(void)
 {
@@ -77,6 +80,7 @@ static void vHighPriorityTask(void *pvParameters)
             gHighTaskRuns++;
             gLastHighTaskTick = xTaskGetTickCount();
             gObservedLatencyTicks = gLastHighTaskTick - gLastIsrTick;
+            gSpinProgressAtHighTask = gTriggerSpinProgress;
             GPIO_PORTF_DATA_R ^= PF1_RED_LED;
         }
     }
@@ -96,12 +100,20 @@ static void vLowPriorityTask(void *pvParameters)
 
 static void vTriggerTask(void *pvParameters)
 {
+    volatile uint32_t spinCount;
+
     (void)pvParameters;
 
     for (;;)
     {
         vTaskDelay(pdMS_TO_TICKS(1000));
+        gTriggerSpinProgress = 0;
         NVIC_SW_TRIG_R = 30;
+
+        for (spinCount = 0; spinCount < POST_INTERRUPT_BUSY_SPIN; ++spinCount)
+        {
+            gTriggerSpinProgress = spinCount;
+        }
     }
 }
 

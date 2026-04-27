@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment 04 Report</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; line-height: 1.5; margin: 40px auto; max-width: 980px; color: #1f2937; background: #ffffff; padding: 0 24px 60px; }
+    h1, h2, h3 { color: #111827; }
+    h1 { border-bottom: 3px solid #0f766e; padding-bottom: 12px; }
+    h2 { margin-top: 32px; border-bottom: 1px solid #d1d5db; padding-bottom: 6px; }
+    img { max-width: 100%; border: 1px solid #d1d5db; margin: 10px 0 20px; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Assignment 04 Report</h1>
+  <h2>Course</h2>
+  <p>CSE323: Advanced Embedded Systems Design<br />CSE411/CSE411s: Real-Time and Embedded Systems Design</p>
+  <h2>Assignment</h2>
+  <p>Assignment 04: Forced Context Switching with <code>portYIELD_FROM_ISR()</code></p>
+  <h2>Objective</h2>
+  <p>The objective of this assignment is to demonstrate the effect of forced context switching from inside an interrupt service routine in FreeRTOS. The required comparison is between a version that calls <code>portYIELD_FROM_ISR()</code> and a version that does not call it. The expected difference is that when the macro is used, the awakened high-priority task should run immediately after the ISR. Without the macro, the task should be delayed until the next scheduling opportunity.</p>
+  <h2>System Design</h2>
+  <p>The implemented system contains a trigger task that fires the interrupt in software, an ISR named <code>GPIOF_Handler()</code> that records the interrupt timing and wakes the high-priority task, a high-priority task that records its own execution timing, and a low-priority task that proves the scheduler is running continuously.</p>
+  <h2>Variables Used for Verification</h2>
+  <p>The watch variables used were <code>gInterruptCount</code>, <code>gPendSvRequests</code>, <code>gHighTaskRuns</code>, <code>gLowTaskIterations</code>, <code>gLastIsrTick</code>, <code>gLastHighTaskTick</code>, and <code>gObservedLatencyTicks</code>.</p>
+  <h2>Comparison Strategy</h2>
+  <p>Two runs were performed. In the first run, <code>#define USE_ISR_YIELD 1U</code> was used. In the second run, <code>#define USE_ISR_YIELD 0U</code> was used. The main comparison variable was <code>gObservedLatencyTicks</code>.</p>
+  <h2>Screenshot Verification and Analysis</h2>
+  <h3>Screenshot 1: ISR breakpoint with scheduler running</h3>
+  <p>File: <code>Screenshot 2026-04-27 180448.png</code></p>
+  <p>This screenshot shows the system stopped in <code>GPIOF_Handler()</code> at the ISR breakpoint. <code>gLowTaskIterations</code> is already increasing, which proves the scheduler is active and tasks are running.</p>
+  <img src="Screenshot%202026-04-27%20180448.png" alt="ISR breakpoint with scheduler running" />
+  <h3>Screenshot 2: ISR entry during the enabled-yield run</h3>
+  <p>File: <code>Screenshot 2026-04-27 180457.png</code></p>
+  <p>This screenshot shows the ISR entry with the original enabled-yield behavior. It is a valid setup screenshot for the <code>USE_ISR_YIELD = 1U</code> case and shows the interrupt path is being hit correctly.</p>
+  <img src="Screenshot%202026-04-27%20180457.png" alt="ISR entry during enabled-yield run" />
+  <h3>Screenshot 3: Delayed task execution with <code>USE_ISR_YIELD = 0U</code></h3>
+  <p>File: <code>Screenshot 2026-04-27 184036.png</code></p>
+  <p>This screenshot shows the delayed case after disabling <code>portYIELD_FROM_ISR()</code>. The watch values show <code>gInterruptCount = 1</code>, <code>gHighTaskRuns = 1</code>, <code>gLastIsrTick = 0x000003E8</code>, <code>gLastHighTaskTick = 0x000003E9</code>, and <code>gObservedLatencyTicks = 1</code>. This is the key proof that the high-priority task did not run immediately after the ISR.</p>
+  <img src="Screenshot%202026-04-27%20184036.png" alt="Delayed task execution with USE_ISR_YIELD 0U" />
+  <h3>Screenshot 4: Repeated delayed behavior with <code>USE_ISR_YIELD = 0U</code></h3>
+  <p>File: <code>Screenshot 2026-04-27 184045.png</code></p>
+  <p>This screenshot confirms the same delayed behavior on the next interrupt cycle. The watch values show <code>gInterruptCount = 2</code>, <code>gHighTaskRuns = 2</code>, <code>gLastIsrTick = 0x000008C0</code>, <code>gLastHighTaskTick = 0x000008C1</code>, and <code>gObservedLatencyTicks = 1</code>. This proves the delay is consistent when the macro is disabled.</p>
+  <img src="Screenshot%202026-04-27%20184045.png" alt="Repeated delayed behavior with USE_ISR_YIELD 0U" />
+  <h3>Screenshot 5: Immediate task execution with <code>USE_ISR_YIELD = 1U</code></h3>
+  <p>File: <code>Screenshot 2026-04-27 184419.png</code></p>
+  <p>This screenshot shows the enabled-yield case after returning <code>USE_ISR_YIELD</code> to <code>1U</code>. The watch values show <code>gInterruptCount = 1</code>, <code>gHighTaskRuns = 1</code>, <code>gLastIsrTick = 0x000003E8</code>, <code>gLastHighTaskTick = 0x000003E8</code>, and <code>gObservedLatencyTicks = 0</code>. This is the direct contrast to the <code>0U</code> case.</p>
+  <img src="Screenshot%202026-04-27%20184419.png" alt="Immediate task execution with USE_ISR_YIELD 1U" />
+  <h2>Experimental Result Summary</h2>
+  <p>With <code>portYIELD_FROM_ISR()</code> enabled, the high-priority task runs immediately in the same tick as the ISR and <code>gObservedLatencyTicks = 0</code>. With the macro disabled, the task runs one tick later and <code>gObservedLatencyTicks = 1</code>. This demonstrates the effect of forced context switching.</p>
+  <h2>Conclusion</h2>
+  <p>The assignment objective was achieved successfully. The implemented FreeRTOS application demonstrates the practical effect of <code>portYIELD_FROM_ISR()</code> on task wake-up timing. The debugger evidence proves that enabling the macro causes immediate context switching, while disabling it delays execution of the higher-priority task.</p>
+</body>
+</html>

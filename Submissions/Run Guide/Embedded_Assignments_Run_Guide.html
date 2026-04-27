@@ -50,7 +50,7 @@
   <p>This guide explains how to run each assignment in Keil step by step, what to open, what to watch, where to place breakpoints, and what result you should expect.</p>
 
   <div class="note">
-    <strong>Important note:</strong> Assignment 03, Assignment 05, and Assignment 07 were already runtime-checked in Keil and their steps below are verified. Assignment 06, Assignment 04, and Assignment 02 are based on the current code in the workspace and are prepared as the next debug flow to follow.
+    <strong>Important note:</strong> Assignment 03, Assignment 05, Assignment 07, Assignment 06, and Assignment 04 were already runtime-checked in Keil and their steps below are verified. Assignment 02 is based on the current code in the workspace and is prepared as the next debug flow to follow.
   </div>
 
   <h2>Recommended Order</h2>
@@ -218,6 +218,7 @@
     <li><code>gLastHighTaskTick</code></li>
     <li><code>gObservedLatencyTicks</code></li>
   </ul>
+  <p>Optional but helpful for deeper comparison: <code>gTriggerSpinProgress</code> and <code>gSpinProgressAtHighTask</code>.</p>
   <h3>Breakpoints</h3>
   <ul>
     <li>the line <code>gInterruptCount++;</code> inside <code>GPIOF_Handler()</code></li>
@@ -228,9 +229,12 @@
     <li>Build and start debug.</li>
     <li>Run without clicking anything manually.</li>
     <li>Record behavior with <code>USE_ISR_YIELD = 1</code>.</li>
+    <li>Verified expected result with <code>USE_ISR_YIELD = 1U</code>: <code>gLastHighTaskTick = gLastIsrTick</code> and <code>gObservedLatencyTicks = 0</code>.</li>
     <li>Then change it to <code>0</code>, rebuild, and repeat.</li>
-    <li>Compare <code>gObservedLatencyTicks</code> between both runs.</li>
+    <li>Verified expected result with <code>USE_ISR_YIELD = 0U</code>: <code>gLastHighTaskTick = gLastIsrTick + 1</code> and <code>gObservedLatencyTicks = 1</code>.</li>
+    <li>Compare both runs directly in the watch window and screenshots.</li>
   </ol>
+  <p>Success means the high-priority task runs immediately with the macro enabled and one tick later with the macro disabled.</p>
 
   <h2>Assignment 02</h2>
   <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-02/Assignment-02.uvprojx</code></p>

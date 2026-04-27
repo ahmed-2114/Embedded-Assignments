@@ -283,6 +283,10 @@ Add these to `Watch 1`:
 - `gLastHighTaskTick`
 - `gObservedLatencyTicks`
 
+Optional but helpful for deeper comparison:
+- `gTriggerSpinProgress`
+- `gSpinProgressAtHighTask`
+
 ### Breakpoints
 Set these two breakpoints in `main.c`:
 - the line `gInterruptCount++;` inside `GPIOF_Handler()`
@@ -299,25 +303,32 @@ Set these two breakpoints in `main.c`:
 8. Next expected stop: high-priority task at `gHighTaskRuns++;`.
 9. Press `F10` once.
 10. Expected: `gHighTaskRuns` increases and `gObservedLatencyTicks` is updated.
-11. Keep note of `gObservedLatencyTicks` when `USE_ISR_YIELD` is `1`.
-12. For the comparison case, change `#define USE_ISR_YIELD 1U` to `#define USE_ISR_YIELD 0U`, rebuild, and repeat the same steps.
-13. Compare the latency values and the delay in task wake-up between the two runs.
+11. Run the first comparison with `#define USE_ISR_YIELD 1U`.
+12. Verified expected result with `USE_ISR_YIELD = 1U`:
+- `gLastHighTaskTick = gLastIsrTick`
+- `gObservedLatencyTicks = 0`
+13. Change the macro to `#define USE_ISR_YIELD 0U`, rebuild, and repeat the same steps.
+14. Verified expected result with `USE_ISR_YIELD = 0U`:
+- `gLastHighTaskTick = gLastIsrTick + 1`
+- `gObservedLatencyTicks = 1`
+15. Compare both runs directly in the watch window and screenshots.
 
 ### What Success Looks Like
 With yield enabled:
 - `gPendSvRequests` increases
-- `gHighTaskRuns` follows quickly after the ISR
-- `gObservedLatencyTicks` is small
+- `gHighTaskRuns` follows immediately after the ISR
+- `gObservedLatencyTicks = 0`
 
 Without yield enabled:
 - high-priority task wake-up is delayed
-- `gObservedLatencyTicks` is larger or visibly delayed until the next scheduling point
+- `gObservedLatencyTicks = 1`
+- `gLastHighTaskTick` is one tick later than `gLastIsrTick`
 
 ### Screenshot Set
-1. ISR stop with yield-enabled build
-2. high-priority task wake-up with yield-enabled build
-3. corresponding high-priority task wake-up with yield-disabled build
-4. comparison screenshot or watch values showing the latency difference
+1. ISR stop during the enabled-yield run
+2. immediate task wake-up with `gObservedLatencyTicks = 0`
+3. delayed task wake-up with `gObservedLatencyTicks = 1`
+4. repeated delayed case confirming the result is consistent
 
 ---
 
