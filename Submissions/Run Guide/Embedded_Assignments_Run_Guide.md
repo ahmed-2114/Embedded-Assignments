@@ -3,8 +3,8 @@
 This guide explains how to run each assignment in Keil step by step, what to open, what to watch, where to place breakpoints, and what result you should expect.
 
 ## Important Note
-- Assignment 03 and Assignment 05 were already runtime-checked in Keil and their steps below are verified.
-- Assignment 07, Assignment 06, Assignment 04, and Assignment 02 are based on the current code in the workspace and are prepared as the next debug flow to follow.
+- Assignment 03, Assignment 05, and Assignment 07 were already runtime-checked in Keil and their steps below are verified.
+- Assignment 06, Assignment 04, and Assignment 02 are based on the current code in the workspace and are prepared as the next debug flow to follow.
 
 ## Recommended Order
 1. Assignment 03
@@ -146,7 +146,7 @@ Add these to `Watch 1`:
 - `gBurstCounter`
 - `gHandlerActive`
 
-If you want Logic Analyzer evidence as required by the PDF, also add:
+For the required Logic Analyzer evidence, also add this signal to the Logic Analyzer window:
 - `gTokensProcessed`
 
 ### Breakpoints
@@ -173,19 +173,28 @@ Set these two breakpoints in `main.c`:
 - `gTokensQueued = 3`
 - `gTokensProcessed` increases one by one as the handler drains the queue
 - `gHandlerActive = 1` during processing
-15. If using Logic Analyzer, the required proof is that `gTokensProcessed` rises in a staircase pattern.
+15. Open `View` -> `Analysis Windows` -> `Logic Analyzer`.
+16. Click `Setup...` in the Logic Analyzer window.
+17. Add the signal `gTokensProcessed`.
+18. Click `OK`, then click `Clear` in the Logic Analyzer window.
+19. Press `Run` again and let the burst complete.
+20. Expected Logic Analyzer result: `gTokensProcessed` rises in a staircase pattern from `0` to `1`, then `2`, then `3`.
+21. If you leave the program running for a second burst, the same staircase repeats and the count continues to rise.
 
 ### What Success Looks Like
 - three distinct interrupts occur
 - no events are dropped
 - the counting semaphore stores all of them
 - `gTokensProcessed` eventually catches up to the queued count
+- the Logic Analyzer shows `gTokensProcessed` stepping upward one token at a time rather than one single jump
 
 ### Screenshot Set
 1. first ISR stop with queue counters at the start of the burst
 2. handler task processing the first token
 3. later state showing queued tokens still preserved while the handler is busy
-4. Logic Analyzer screenshot showing the staircase pattern of `gTokensProcessed`
+4. Logic Analyzer screenshot when `gTokensProcessed = 1`
+5. Logic Analyzer screenshot when `gTokensProcessed = 2`
+6. Logic Analyzer screenshot when `gTokensProcessed = 3`
 
 ---
 

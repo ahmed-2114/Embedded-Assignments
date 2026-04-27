@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\Assignment-07.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\Assignment-07.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6190004: Last Updated: Sun Apr 19 22:47:26 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6190004: Last Updated: Mon Apr 27 16:53:09 2026
 <BR><P>
 <H3>Maximum Stack Usage =        276 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1306,7 +1306,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_lib_init_fp_1
 </UL>
 
-<P><STRONG><a name="[28]"></a>GPIOF_Handler</STRONG> (Thumb, 106 bytes, Stack size 16 bytes, main.o(.text.GPIOF_Handler))
+<P><STRONG><a name="[28]"></a>GPIOF_Handler</STRONG> (Thumb, 136 bytes, Stack size 16 bytes, main.o(.text.GPIOF_Handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = GPIOF_Handler &rArr; xQueueGiveFromISR &rArr; xTaskRemoveFromEventList
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGiveFromISR
@@ -1321,10 +1321,6 @@ Global Symbols
 <BR>[Address Reference Count : 2]<UL><LI> port.o(.text.xPortStartScheduler)
 <LI> startup_tm4c123.o(RESET)
 </UL>
-<P><STRONG><a name="[a8]"></a>PortF_Init</STRONG> (Thumb, 120 bytes, Stack size 0 bytes, main.o(.text.PortF_Init))
-<BR><BR>[Called By]<UL><LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-</UL>
-
 <P><STRONG><a name="[6]"></a>SVC_Handler</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, port.o(.text.SVC_Handler))
 <BR>[Address Reference Count : 2]<UL><LI> port.o(.text.xPortStartScheduler)
 <LI> startup_tm4c123.o(RESET)
@@ -1382,7 +1378,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_exit_exit
 </UL>
 
-<P><STRONG><a name="[8f]"></a>main</STRONG> (Thumb, 118 bytes, Stack size 32 bytes, main.o(.text.main))
+<P><STRONG><a name="[8f]"></a>main</STRONG> (Thumb, 134 bytes, Stack size 32 bytes, main.o(.text.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 276 + Unknown Stack Size
 <LI>Call Chain = main &rArr; vTaskStartScheduler &rArr; prvCreateIdleTasks &rArr; xTaskCreateStatic &rArr; prvCreateStaticTask &rArr; prvInitialiseNewTask &rArr; pxPortInitialiseStack
 </UL>
@@ -1451,13 +1447,6 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskSwitchContext
 </UL>
 
-<P><STRONG><a name="[79]"></a>vHandlerTask</STRONG> (Thumb, 114 bytes, Stack size 16 bytes, main.o(.text.vHandlerTask))
-<BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = vHandlerTask &rArr; xQueueSemaphoreTake &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
-</UL>
-<BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-</UL>
-<BR>[Address Reference Count : 1]<UL><LI> main.o(.text.main)
-</UL>
 <P><STRONG><a name="[b4]"></a>vListInitialise</STRONG> (Thumb, 46 bytes, Stack size 4 bytes, list.o(.text.vListInitialise))
 <BR><BR>[Stack]<UL><LI>Max Depth = 4<LI>Call Chain = vListInitialise
 </UL>
@@ -1519,7 +1508,7 @@ Global Symbols
 <P><STRONG><a name="[c4]"></a>vPortFree</STRONG> (Thumb, 222 bytes, Stack size 24 bytes, heap_4.o(.text.vPortFree))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = vPortFree &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvInsertBlockIntoFreeList
+<BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvInsertBlockIntoFreeList
 <LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskResumeAll
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskSuspendAll
 </UL>
@@ -1550,7 +1539,7 @@ Global Symbols
 <P><STRONG><a name="[d5]"></a>vQueueWaitForMessageRestricted</STRONG> (Thumb, 100 bytes, Stack size 24 bytes, queue.o(.text.vQueueWaitForMessageRestricted))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = vQueueWaitForMessageRestricted &rArr; vTaskPlaceOnEventListRestricted &rArr; prvAddCurrentTaskToDelayedList &rArr; vListInsert
 </UL>
-<BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventListRestricted
+<BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventListRestricted
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvUnlockQueue
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
@@ -1558,14 +1547,15 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvProcessTimerOrBlockTask
 </UL>
 
-<P><STRONG><a name="[df]"></a>vTaskDelay</STRONG> (Thumb, 98 bytes, Stack size 16 bytes, tasks.o(.text.vTaskDelay))
+<P><STRONG><a name="[dd]"></a>vTaskDelay</STRONG> (Thumb, 98 bytes, Stack size 16 bytes, tasks.o(.text.vTaskDelay))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvAddCurrentTaskToDelayedList
 <LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskResumeAll
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskSuspendAll
 </UL>
-<BR>[Called By]<UL><LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTriggerTask
+<BR>[Called By]<UL><LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vHandlerTask
+<LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTriggerTask
 </UL>
 
 <P><STRONG><a name="[ea]"></a>vTaskInternalSetTimeOutState</STRONG> (Thumb, 36 bytes, Stack size 4 bytes, tasks.o(.text.vTaskInternalSetTimeOutState))
@@ -1592,7 +1582,7 @@ Global Symbols
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 </UL>
 
-<P><STRONG><a name="[de]"></a>vTaskPlaceOnEventListRestricted</STRONG> (Thumb, 114 bytes, Stack size 24 bytes, tasks.o(.text.vTaskPlaceOnEventListRestricted))
+<P><STRONG><a name="[df]"></a>vTaskPlaceOnEventListRestricted</STRONG> (Thumb, 114 bytes, Stack size 24 bytes, tasks.o(.text.vTaskPlaceOnEventListRestricted))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = vTaskPlaceOnEventListRestricted &rArr; prvAddCurrentTaskToDelayedList &rArr; vListInsert
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvAddCurrentTaskToDelayedList
@@ -1626,7 +1616,7 @@ Global Symbols
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pvPortMalloc
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
 </UL>
 
 <P><STRONG><a name="[81]"></a>vTaskSwitchContext</STRONG> (Thumb, 312 bytes, Stack size 32 bytes, tasks.o(.text.vTaskSwitchContext))
@@ -1638,13 +1628,6 @@ Global Symbols
 <LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xPortStartScheduler
 </UL>
 
-<P><STRONG><a name="[78]"></a>vTriggerTask</STRONG> (Thumb, 60 bytes, Stack size 24 bytes, main.o(.text.vTriggerTask))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = vTriggerTask &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
-</UL>
-<BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
-</UL>
-<BR>[Address Reference Count : 1]<UL><LI> main.o(.text.main)
-</UL>
 <P><STRONG><a name="[e3]"></a>xPortStartScheduler</STRONG> (Thumb, 428 bytes, Stack size 32 bytes, port.o(.text.xPortStartScheduler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = xPortStartScheduler &rArr; vTaskSwitchContext &rArr; vApplicationStackOverflowHook
 </UL>
@@ -1892,7 +1875,7 @@ Global Symbols
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pvPortMalloc
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
 </UL>
 
 <P><STRONG><a name="[e2]"></a>xTimerCreateTimerTask</STRONG> (Thumb, 134 bytes, Stack size 40 bytes, timers.o(.text.xTimerCreateTimerTask))
@@ -1917,6 +1900,25 @@ Global Symbols
 <H3>
 Local Symbols
 </H3>
+<P><STRONG><a name="[a8]"></a>PortF_Init</STRONG> (Thumb, 148 bytes, Stack size 0 bytes, main.o(.text.PortF_Init))
+<BR><BR>[Called By]<UL><LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+</UL>
+
+<P><STRONG><a name="[78]"></a>vTriggerTask</STRONG> (Thumb, 166 bytes, Stack size 16 bytes, main.o(.text.vTriggerTask))
+<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = vTriggerTask &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+</UL>
+<BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
+</UL>
+<BR>[Address Reference Count : 1]<UL><LI> main.o(.text.main)
+</UL>
+<P><STRONG><a name="[79]"></a>vHandlerTask</STRONG> (Thumb, 106 bytes, Stack size 24 bytes, main.o(.text.vHandlerTask))
+<BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = vHandlerTask &rArr; xQueueSemaphoreTake &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+</UL>
+<BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
+</UL>
+<BR>[Address Reference Count : 1]<UL><LI> main.o(.text.main)
+</UL>
 <P><STRONG><a name="[a1]"></a>os_kernel_is_active</STRONG> (Thumb, 32 bytes, Stack size 16 bytes, clib_os.o(.text.os_kernel_is_active), UNUSED, KEPT)
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = os_kernel_is_active &rArr; xTaskGetSchedulerState
 </UL>
@@ -1955,7 +1957,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pvPortMalloc
 </UL>
 
-<P><STRONG><a name="[dd]"></a>prvInsertBlockIntoFreeList</STRONG> (Thumb, 280 bytes, Stack size 16 bytes, heap_4.o(.text.prvInsertBlockIntoFreeList))
+<P><STRONG><a name="[de]"></a>prvInsertBlockIntoFreeList</STRONG> (Thumb, 280 bytes, Stack size 16 bytes, heap_4.o(.text.prvInsertBlockIntoFreeList))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = prvInsertBlockIntoFreeList
 </UL>
 <BR>[Called By]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortFree
@@ -2106,9 +2108,9 @@ Local Symbols
 <BR>[Calls]<UL><LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 <LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsert
 </UL>
-<BR>[Called By]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventListRestricted
+<BR>[Called By]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventListRestricted
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventList
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
 </UL>
 
 <P><STRONG><a name="[bc]"></a>prvCreateIdleTasks</STRONG> (Thumb, 216 bytes, Stack size 72 bytes, tasks.o(.text.prvCreateIdleTasks))

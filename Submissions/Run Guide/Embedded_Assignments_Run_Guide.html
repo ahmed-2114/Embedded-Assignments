@@ -50,7 +50,7 @@
   <p>This guide explains how to run each assignment in Keil step by step, what to open, what to watch, where to place breakpoints, and what result you should expect.</p>
 
   <div class="note">
-    <strong>Important note:</strong> Assignment 03 and Assignment 05 were already runtime-checked in Keil and their steps below are verified. Assignment 07, Assignment 06, Assignment 04, and Assignment 02 are based on the current code in the workspace and are prepared as the next debug flow to follow.
+    <strong>Important note:</strong> Assignment 03, Assignment 05, and Assignment 07 were already runtime-checked in Keil and their steps below are verified. Assignment 06, Assignment 04, and Assignment 02 are based on the current code in the workspace and are prepared as the next debug flow to follow.
   </div>
 
   <h2>Recommended Order</h2>
@@ -159,6 +159,7 @@
     <li><code>gBurstCounter</code></li>
     <li><code>gHandlerActive</code></li>
   </ul>
+  <p>For the required Logic Analyzer evidence, also add the signal <code>gTokensProcessed</code> to the Logic Analyzer window.</p>
   <h3>Breakpoints</h3>
   <ul>
     <li>the line <code>gInterruptsFired++;</code> inside <code>GPIOF_Handler()</code></li>
@@ -172,7 +173,13 @@
     <li>Continue to the handler stop. Step once and expect <code>gTokensProcessed = 1</code>.</li>
     <li>Continue until all three interrupts occur.</li>
     <li>Final expected behavior: three interrupts, three queued tokens, and a staircase increase in <code>gTokensProcessed</code>.</li>
+    <li>Open <code>View</code> -&gt; <code>Analysis Windows</code> -&gt; <code>Logic Analyzer</code>.</li>
+    <li>Click <code>Setup...</code> and add <code>gTokensProcessed</code>.</li>
+    <li>Click <code>Clear</code>, then run again and let the burst complete.</li>
+    <li>Expected Logic Analyzer result: <code>gTokensProcessed</code> rises from <code>0</code> to <code>1</code>, then <code>2</code>, then <code>3</code> in separate steps.</li>
+    <li>If a second burst happens, the same step pattern repeats and the count continues increasing.</li>
   </ol>
+  <p>Success means three distinct interrupts occur, no tokens are lost, and the Logic Analyzer shows the task processing those tokens one by one instead of one single jump.</p>
 
   <h2>Assignment 06</h2>
   <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-06/Assignment-06.uvprojx</code></p>

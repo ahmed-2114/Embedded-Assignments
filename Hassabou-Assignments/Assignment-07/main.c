@@ -46,7 +46,7 @@ void GPIOF_Handler(void) {
     GPIO_PORTF_ICR_R = PF4_SWITCH;
 
     gInterruptsFired++;
-    gTokensQueued++;
+		gTokensQueued++;
     GPIO_PORTF_DATA_R ^= PF1_RED_LED;
 
     if (xCountingSemaphore != NULL) {
