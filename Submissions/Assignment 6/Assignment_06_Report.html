@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment 06 Report</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; line-height: 1.5; margin: 40px auto; max-width: 980px; color: #1f2937; background: #ffffff; padding: 0 24px 60px; }
+    h1, h2, h3 { color: #111827; }
+    h1 { border-bottom: 3px solid #0f766e; padding-bottom: 12px; }
+    h2 { margin-top: 32px; border-bottom: 1px solid #d1d5db; padding-bottom: 6px; }
+    img { max-width: 100%; border: 1px solid #d1d5db; margin: 10px 0 20px; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Assignment 06 Report</h1>
+  <h2>Course</h2>
+  <p>CSE323: Advanced Embedded Systems Design<br />CSE411/CSE411s: Real-Time and Embedded Systems Design</p>
+  <h2>Assignment</h2>
+  <p>Assignment 06: Counting Semaphore for Shared Resource Management</p>
+  <h2>Objective</h2>
+  <p>The purpose of this assignment is to demonstrate how a counting semaphore can be used to manage a limited pool of shared resources in a FreeRTOS system. The required proof is that multiple worker tasks may compete for the resources, but no more than the available number of resources can be used at the same time.</p>
+  <h2>System Scenario</h2>
+  <p>The implemented design models a resource pool with 5 worker tasks competing for access, 2 identical shared resources available at any time, and 1 counting semaphore initialized with a maximum count of 2 and an initial count of 2. Each worker task repeatedly attempts to take a token, marks itself as active, simulates resource usage using <code>vTaskDelay()</code>, and releases the token afterward.</p>
+  <h2>Verification Variables</h2>
+  <p>The debugger watch window used <code>gActiveResources</code>, <code>gMaxObservedResources</code>, and <code>gTaskUsingResource[0..4]</code>. These variables are sufficient to show how many resources are occupied and which tasks are currently inside the resource-usage section.</p>
+  <h2>Debug Method</h2>
+  <p>The project was run in Keil debug mode with breakpoints at <code>gActiveResources++;</code> and <code>gActiveResources--;</code>. This allowed observation of both acquisition and release states while the five worker tasks competed for the two available tokens.</p>
+  <h2>Screenshot Verification and Analysis</h2>
+  <p>The alternating states in the screenshots are expected and correct. Since five worker tasks are repeatedly competing for only two resources, the exact worker IDs holding resources will change over time. What matters is that the total number of active resource users never exceeds 2.</p>
+  <h3>Screenshot 1: Initial baseline before acquisition</h3>
+  <p>File: <code>Screenshot 2026-04-27 174352.png</code></p>
+  <p>This screenshot shows the baseline state before any worker has successfully entered the resource section. At this point, <code>gActiveResources = 0</code>, <code>gMaxObservedResources = 0</code>, and all <code>gTaskUsingResource[]</code> entries are <code>0</code>. This is a valid starting state for the experiment.</p>
+  <img src="Screenshot%202026-04-27%20174352.png" alt="Initial baseline before acquisition" />
+  <h3>Screenshot 2: First worker acquires a resource</h3>
+  <p>File: <code>Screenshot 2026-04-27 174415.png</code></p>
+  <p>This screenshot shows the system stopped at the acquisition breakpoint. The watch values show <code>gActiveResources = 1</code>, <code>gMaxObservedResources = 1</code>, and one task entry in <code>gTaskUsingResource[]</code> is active. This proves the first worker successfully claimed one of the two resource tokens.</p>
+  <img src="Screenshot%202026-04-27%20174415.png" alt="First worker acquires a resource" />
+  <h3>Screenshot 3: Two resources are in use simultaneously</h3>
+  <p>File: <code>Screenshot 2026-04-27 174422.png</code></p>
+  <p>This screenshot shows the system after another worker has entered the resource section. The watch values show <code>gActiveResources = 2</code> and <code>gMaxObservedResources = 2</code>. This is the key proof that the system allows up to two concurrent resource users, matching the semaphore configuration.</p>
+  <img src="Screenshot%202026-04-27%20174422.png" alt="Two resources in use simultaneously" />
+  <h3>Screenshot 4: Resource release while maximum remains bounded</h3>
+  <p>File: <code>Screenshot 2026-04-27 174428.png</code></p>
+  <p>This screenshot shows the system at the release breakpoint. The watch values show <code>gActiveResources = 1</code> and <code>gMaxObservedResources = 2</code>. This means one worker released a token, but the maximum observed simultaneous usage remained at 2. This is expected and proves that the system dynamically allocates and releases resources while preserving the upper limit.</p>
+  <img src="Screenshot%202026-04-27%20174428.png" alt="Resource release while maximum remains bounded" />
+  <h3>Screenshot 5: Alternating active worker identity, same resource limit</h3>
+  <p>File: <code>Screenshot 2026-04-27 174431.png</code></p>
+  <p>This screenshot shows that the identity of the active worker changed, which is normal because multiple tasks are competing continuously. The watch values still show that <code>gActiveResources</code> does not exceed <code>2</code> and <code>gMaxObservedResources = 2</code>. This is valid proof that the active worker IDs alternate over time, but the total number of simultaneous resource users never exceeds the configured limit.</p>
+  <img src="Screenshot%202026-04-27%20174431.png" alt="Alternating active worker identity, same resource limit" />
+  <h2>Experimental Result Summary</h2>
+  <p>The captured execution confirms the expected behavior of the counting semaphore resource pool: worker tasks enter and leave the resource section over time, the identity of the active worker changes from one breakpoint to another, <code>gActiveResources</code> rises and falls dynamically, <code>gMaxObservedResources</code> reaches <code>2</code> and never exceeds it, and the counting semaphore therefore limits access to the shared resource pool to two concurrent users.</p>
+  <h2>Conclusion</h2>
+  <p>The assignment objective was achieved successfully. The implemented FreeRTOS application demonstrates that a counting semaphore can be used to manage a limited pool of two shared resources among five competing worker tasks. The debugger evidence shows that while the active task identities alternate over time, the total number of simultaneous resource users never exceeds 2. This confirms correct counting semaphore behavior for resource management.</p>
+</body>
+</html>
