@@ -50,7 +50,7 @@
   <p>This guide explains how to run each assignment in Keil step by step, what to open, what to watch, where to place breakpoints, and what result you should expect.</p>
 
   <div class="note">
-    <strong>Important note:</strong> Assignment 03, Assignment 05, Assignment 07, Assignment 06, and Assignment 04 were already runtime-checked in Keil and their steps below are verified. Assignment 02 is based on the current code in the workspace and is prepared as the next debug flow to follow.
+    <strong>Important note:</strong> Assignment 02, Assignment 03, Assignment 04, Assignment 05, Assignment 06, and Assignment 07 were runtime-checked in Keil and their steps below are verified. The guide below now matches the final validated debugger behavior and the report screenshots used in the submission folders.
   </div>
 
   <h2>Recommended Order</h2>
@@ -205,6 +205,7 @@
     <li>Continue until two tasks are active.</li>
     <li>Expected final proof: <code>gMaxObservedResources</code> never exceeds <code>2</code>.</li>
   </ol>
+  <p>Success means at most two tasks are inside the resource section at any time. The exact worker IDs may alternate between runs, and that is normal; the required proof is the two-resource limit, not a fixed worker order.</p>
 
   <h2>Assignment 04</h2>
   <p><strong>Project file:</strong> <code>Hassabou-Assignments/Assignment-04/Assignment-03.uvprojx</code></p>
@@ -243,6 +244,7 @@
     <li><code>Memory 1</code></li>
     <li>Disassembly only if needed</li>
   </ul>
+  <p>In <code>Memory 1</code>, enter <code>g_restoredSp</code> first and then <code>g_faultyRestoreSp</code> instead of using hardcoded addresses.</p>
   <h3>Watch Variables</h3>
   <ul>
     <li><code>g_ui32SysTickCount</code></li>
@@ -268,9 +270,14 @@
   <ol>
     <li>Build and start debug.</li>
     <li>Run until the restore attempt occurs.</li>
-    <li>Step through the frame decode.</li>
-    <li>Compare <code>g_expectedPc</code>, <code>g_observedPc</code>, <code>g_restoredSp</code>, and <code>g_faultyRestoreSp</code>.</li>
-    <li>Expected final proof: <code>g_contextCorruptionDetected = 1</code> and the frame values no longer match a valid restore.</li>
+    <li>Stop at <code>g_restoreAttemptCount++;</code>, then press <code>F10</code> repeatedly.</li>
+    <li>After roughly 7 single-step presses, stop once <code>g_lastDecodedFrame = DecodeFrame(candidateSp);</code> and <code>g_observedPc = g_lastDecodedFrame.pc;</code> have executed.</li>
+    <li>Compare <code>g_expectedPc</code>, <code>g_observedPc</code>, <code>g_restoredSp</code>, <code>g_faultyRestoreSp</code>, and <code>g_lastDecodedFrame.xpsr</code>.</li>
+    <li>Use <code>Memory 1</code> to inspect <code>g_restoredSp</code> and <code>g_faultyRestoreSp</code> and confirm the one-word shift.</li>
+    <li>Continue to the corruption-check <code>if</code>.</li>
+    <li>Expected final proof: <code>g_contextCorruptionDetected = 1</code>, <code>g_observedPc</code> no longer matches <code>g_expectedPc</code>, and <code>g_faultSignature</code> is nonzero.</li>
   </ol>
+  <p>Validated final values from the captured run were <code>g_restoredSp = 0x200001E4</code>, <code>g_faultyRestoreSp = 0x200001E8</code>, <code>g_observedPc = 0x01000000</code>, and <code>g_contextCorruptionDetected = 1</code>.</p>
+  <p>Use these final screenshots for the report: <code>Screenshot 2026-04-27 201316.png</code>, <code>Screenshot 2026-04-27 201426.png</code>, and <code>Screenshot 2026-04-27 201451.png</code>.</p>
 </body>
 </html>

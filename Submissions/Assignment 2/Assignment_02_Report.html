@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment 02 Report</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; line-height: 1.5; margin: 40px auto; max-width: 980px; color: #1f2937; background: #ffffff; padding: 0 24px 60px; }
+    h1, h2, h3 { color: #111827; }
+    h1 { border-bottom: 3px solid #0f766e; padding-bottom: 12px; }
+    h2 { margin-top: 32px; border-bottom: 1px solid #d1d5db; padding-bottom: 6px; }
+    img { max-width: 100%; border: 1px solid #d1d5db; margin: 10px 0 20px; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Assignment 02 Report</h1>
+  <h2>Course</h2>
+  <p>CSE323: Advanced Embedded Systems Design<br />CSE411/CSE411s: Real-Time and Embedded Systems Design</p>
+  <h2>Assignment</h2>
+  <p>Assignment 02: Wrong Stack Pointer Restoration Demo</p>
+  <h2>Objective</h2>
+  <p>The objective of this assignment is to demonstrate what happens when a task context is restored using the wrong stack pointer. Instead of restoring the correct saved exception frame, the program intentionally shifts the stack pointer by one word for Task 2. This causes the decoded program counter and status register fields to become invalid, which is then detected by the corruption check.</p>
+  <h2>System Design</h2>
+  <p>The program builds two synthetic Cortex-M exception frames, one for <code>Task1()</code> and one for <code>Task2()</code>, using <code>BuildInitialFrame()</code>. A simulated context-restore routine named <code>AttemptContextRestore()</code> is called periodically from <code>SysTick_Handler()</code>.</p>
+  <p>The restore routine selects the next task, chooses the correct saved stack pointer in <code>g_restoredSp</code>, intentionally shifts it for Task 2 using <code>g_faultyRestoreSp = g_restoredSp + 1</code>, decodes the frame, and checks whether the decoded <code>pc</code> and <code>xpsr</code> are valid.</p>
+  <h2>Variables Used for Verification</h2>
+  <p>The main watch variables used during debugging were <code>g_ui32SysTickCount</code>, <code>g_restoreAttemptCount</code>, <code>g_currentTaskId</code>, <code>g_nextTaskId</code>, <code>g_contextCorruptionDetected</code>, <code>g_expectedPc</code>, <code>g_observedPc</code>, <code>g_faultSignature</code>, <code>g_currentSp</code>, <code>g_restoredSp</code>, <code>g_faultyRestoreSp</code>, <code>g_lastDecodedFrame.pc</code>, and <code>g_lastDecodedFrame.xpsr</code>.</p>
+  <h2>Debug Method</h2>
+  <p>Two breakpoints were used inside <code>AttemptContextRestore()</code>: one at the start of the restore attempt and one at the corruption-check <code>if</code> condition. The Memory windows were used to compare <code>g_restoredSp</code> and <code>g_faultyRestoreSp</code>.</p>
+  <h2>Screenshot Verification and Analysis</h2>
+  <h3>Screenshot 1: Correct restore pointer versus faulty shifted pointer</h3>
+  <p>File: <code>Screenshot 2026-04-27 201316.png</code></p>
+  <p>This screenshot shows the first restore attempt after the SysTick counter reaches <code>0x000003E8</code>. The next task selected is Task 2. The watch values show <code>g_restoredSp = 0x200001E4</code> and <code>g_faultyRestoreSp = 0x200001E8</code>, proving that the faulty restore pointer is shifted by exactly one word.</p>
+  <img src="Screenshot%202026-04-27%20201316.png" alt="Correct restore pointer versus faulty shifted pointer" />
+  <h3>Screenshot 2: Corrupted frame decode</h3>
+  <p>File: <code>Screenshot 2026-04-27 201426.png</code></p>
+  <p>This screenshot shows the state immediately after decoding the frame from the faulty pointer. The expected PC for Task 2 is <code>0x000008B9</code>, but the observed decoded values are corrupted: <code>g_observedPc = 0x01000000</code>, <code>g_lastDecodedFrame.pc = 0x01000000</code>, and <code>g_lastDecodedFrame.xpsr = 0x00000000</code>.</p>
+  <img src="Screenshot%202026-04-27%20201426.png" alt="Corrupted frame decode" />
+  <h3>Screenshot 3: Corruption detected and fault signature generated</h3>
+  <p>File: <code>Screenshot 2026-04-27 201451.png</code></p>
+  <p>This screenshot shows the program after entering the corruption-handling path. The watch values show <code>g_contextCorruptionDetected = 1</code>, <code>g_expectedPc = 0x000008B9</code>, <code>g_observedPc = 0x01000000</code>, and <code>g_faultSignature = 0x01000000</code>.</p>
+  <img src="Screenshot%202026-04-27%20201451.png" alt="Corruption detected and fault signature generated" />
+  <h2>Experimental Result Summary</h2>
+  <p>The debugger results show a complete cause-and-effect chain: the correct saved frame exists at <code>g_restoredSp</code>, the restore address is intentionally changed to <code>g_faultyRestoreSp = g_restoredSp + 1</code>, decoding from that shifted address corrupts the frame fields, the decoded <code>pc</code> no longer matches <code>g_expectedPc</code>, the decoded <code>xpsr</code> becomes invalid, and the corruption flag is raised.</p>
+  <h2>Conclusion</h2>
+  <p>The assignment objective was achieved successfully. The implementation demonstrates that restoring a task context from the wrong stack pointer causes corrupted exception-frame decoding. The debugger evidence clearly shows the pointer shift, the resulting mismatch between expected and observed program counter values, and the final corruption detection flag.</p>
+</body>
+</html>

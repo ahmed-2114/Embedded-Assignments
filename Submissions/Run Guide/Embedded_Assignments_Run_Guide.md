@@ -3,8 +3,8 @@
 This guide explains how to run each assignment in Keil step by step, what to open, what to watch, where to place breakpoints, and what result you should expect.
 
 ## Important Note
-- Assignment 03, Assignment 05, and Assignment 07 were already runtime-checked in Keil and their steps below are verified.
-- Assignment 06, Assignment 04, and Assignment 02 are based on the current code in the workspace and are prepared as the next debug flow to follow.
+- Assignment 02, Assignment 03, Assignment 04, Assignment 05, Assignment 06, and Assignment 07 were runtime-checked in Keil and their steps below are verified.
+- The guide below now matches the final validated debugger behavior and the report screenshots used in the submission folders.
 
 ## Recommended Order
 1. Assignment 03
@@ -252,6 +252,7 @@ Set these two breakpoints in `main.c`:
 - `gTaskUsingResource[]` shows which two are active
 - `gAcquireCount[]` and `gReleaseCount[]` keep increasing over time
 - `gMaxObservedResources = 2`
+- the exact worker IDs may alternate between runs, and that is normal; the required proof is the two-resource limit, not a fixed worker order
 
 ### Screenshot Set
 1. state where one worker holds a resource
@@ -346,6 +347,10 @@ For this assignment, in addition to the standard windows, also open:
 - `Memory 1`
 - disassembly only if needed
 
+In `Memory 1`, use these expressions directly instead of hardcoded addresses:
+- `g_restoredSp`
+- `g_faultyRestoreSp`
+
 ### Watch Variables
 Add these to `Watch 1`:
 - `g_ui32SysTickCount`
@@ -372,30 +377,36 @@ Set these two breakpoints in `main.c`:
 2. Press `Run`.
 3. Wait until SysTick has advanced enough for a restore attempt.
 4. First expected stop: `AttemptContextRestore()` at `g_restoreAttemptCount++;`.
-5. Press `F10` and watch the restore variables update.
-6. Continue stepping until after `g_lastDecodedFrame = DecodeFrame(candidateSp);`.
-7. Compare:
+5. Press `F10` repeatedly and watch the restore variables update.
+6. After roughly 7 single-step presses from the first breakpoint, stop when execution has completed `g_lastDecodedFrame = DecodeFrame(candidateSp);` and `g_observedPc = g_lastDecodedFrame.pc;`.
+7. At that point, compare:
 - `g_expectedPc`
 - `g_observedPc`
+- `g_restoredSp`
+- `g_faultyRestoreSp`
 - `g_lastDecodedFrame.xpsr`
 8. Because `g_useBrokenRestore = 1`, the broken restore path for Task 2 should use `g_faultyRestoreSp = g_restoredSp + 1`.
-9. When the corruption check executes, expected result:
+9. In `Memory 1`, first inspect `g_restoredSp`, then inspect `g_faultyRestoreSp` to confirm the one-word shift in the synthetic frame.
+10. Continue until the corruption check executes. Expected result:
 - `g_contextCorruptionDetected = 1`
 - `g_observedPc` does not match `g_expectedPc`, or the xPSR thumb bit is wrong
 - `g_faultSignature` becomes nonzero
-10. Use `Memory 1` to inspect the stack contents around `g_restoredSp` and `g_faultyRestoreSp`.
+11. Use the screenshots at these moments:
+- screenshot 1: when `g_restoredSp` and `g_faultyRestoreSp` are both visible and differ by one word
+- screenshot 2: after `g_observedPc` is updated and the decoded frame values are visibly corrupted
+- screenshot 3: after `g_contextCorruptionDetected` becomes `1`
 
 ### What Success Looks Like
 - synthetic stack frames are built for both tasks
 - the restore attempt for Task 2 intentionally uses the wrong stack pointer
 - decoded frame values become inconsistent
 - the corruption flag is raised
+- validated values from the final run showed `g_restoredSp = 0x200001E4`, `g_faultyRestoreSp = 0x200001E8`, `g_observedPc = 0x01000000`, and `g_contextCorruptionDetected = 1`
 
 ### Screenshot Set
-1. breakpoint at the start of `AttemptContextRestore()`
-2. watch values after decoding the frame
-3. proof that `g_faultyRestoreSp` differs from `g_restoredSp`
-4. corruption-detection state showing mismatched PC or bad xPSR
+1. `Screenshot 2026-04-27 201316.png` showing `g_restoredSp` versus `g_faultyRestoreSp`
+2. `Screenshot 2026-04-27 201426.png` showing corrupted decoded values after the faulty restore
+3. `Screenshot 2026-04-27 201451.png` showing `g_contextCorruptionDetected = 1` and a nonzero fault signature
 
 ---
 
